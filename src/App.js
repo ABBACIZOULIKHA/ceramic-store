@@ -9,7 +9,7 @@ import ProductDetail from './pages/ProductDetail';
 function App() {
   return (
     <div className="App">
-      <Router basename="/ceramic-store">
+      <Router>
         <Routes>
           <Route path='/' element={<HomePage />} />
           <Route path='/contact' element={<Contact />} />
