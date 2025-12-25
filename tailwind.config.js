@@ -6,9 +6,20 @@ module.exports = {
   ],
   theme: {
     extend: {
-      fontFamily :{
-        Poppins :"Poppins" ,
-    } ,
+      fontFamily: {
+        Poppins: "Poppins",
+      },
+
+      colors: {
+// Earth / Natural palette
+        clay: '#CB997E',        // Warm Clay
+        sand: '#DDBEA9',        // Sand Beige
+        ivory: '#FFE8D6',       // Warm Ivory
+        stone: '#B7B7A4',       // Stone Gray
+        sage: '#A5A58D',        // Sage Stone
+        olive: '#6B705C',       // Earth Olive
+      },
+
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
@@ -19,6 +30,7 @@ module.exports = {
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
       },
+
       animation: {
         fadeIn: 'fadeIn 2s ease-out',
         slideInLeft: 'slideInLeft 1.5s ease-out',
