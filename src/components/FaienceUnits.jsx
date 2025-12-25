@@ -10,6 +10,7 @@ const FaienceUnits = ({ units, nom }) => {
           <div key={i} className="flex gap-4 items-center">
             <img
               src={u.url}
+              alt={u.description}
               className="w-24 h-16 object-cover rounded-lg border"
             />
             <p className="text-sm text-gray-700">

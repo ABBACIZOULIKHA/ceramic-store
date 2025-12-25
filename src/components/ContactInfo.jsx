@@ -68,19 +68,19 @@ const ContactInfo = () => {
               </p>
               <div className="flex gap-4">
                 <a
-                  href="#"
+                  href="https://facebook.com"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaFacebookF />
                 </a>
                 <a
-                  href="#"
+                  href="https://instagram.com"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaInstagram />
                 </a>
                 <a
-                  href="#"
+                  href="htttps://linkedin.com"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaLinkedinIn />
