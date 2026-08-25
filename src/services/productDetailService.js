@@ -1,15 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey
-);
-
-
-
+const safeData = ({ data, error }) => {
+  if (error) console.error("Supabase error:", error.message);
+  return data || [];
+};
 
 /* ======================
    FAÏENCE
@@ -21,25 +15,35 @@ export const fetchFaienceDetail = async (id) => {
     .eq("id", id)
     .single();
 
-  const { data: grands } = await supabase
-    .from("photos_grand_faience")
-    .select("url")
-    .eq("id_faience", id);
+  if (!faience) return null;
 
-  const { data: units } = await supabase
-    .from("photos_unite_faience")
-    .select("url, description")
-    .eq("id_faience", id);
+  const grands = safeData(
+    await supabase
+      .from("photos_grand_faience")
+      .select("url")
+      .eq("id_faience", id)
+  );
 
-  const { data: utilisations } = await supabase
-    .from("faience_utilisations")
-    .select("utilisations(nom)")
-    .eq("id_faience", id);
+  const units = safeData(
+    await supabase
+      .from("photos_unite_faience")
+      .select("url, description")
+      .eq("id_faience", id)
+  );
 
-  const { data: finitions } = await supabase
-    .from("faience_finitions")
-    .select("finitions(nom)")
-    .eq("id_faience", id);
+  const utilisations = safeData(
+    await supabase
+      .from("faience_utilisations")
+      .select("utilisations(nom)")
+      .eq("id_faience", id)
+  );
+
+  const finitions = safeData(
+    await supabase
+      .from("faience_finitions")
+      .select("finitions(nom)")
+      .eq("id_faience", id)
+  );
 
   return {
     type: "faience",
@@ -61,15 +65,21 @@ export const fetchBathroomDetail = async (id) => {
     .eq("id", id)
     .single();
 
-  const { data: grands } = await supabase
-    .from("photos_grand_bathroom")
-    .select("url")
-    .eq("id_bathroom", id);
+  if (!bathroom) return null;
 
-  const { data: units } = await supabase
-    .from("photos_unite_bathroom")
-    .select("url, description")
-    .eq("id_bathroom", id);
+  const grands = safeData(
+    await supabase
+      .from("photos_grand_bathroom")
+      .select("url")
+      .eq("id_bathroom", id)
+  );
+
+  const units = safeData(
+    await supabase
+      .from("photos_unite_bathroom")
+      .select("url, description")
+      .eq("id_bathroom", id)
+  );
 
   return {
     type: "bathroom",

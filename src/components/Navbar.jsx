@@ -7,13 +7,16 @@ import {
   FaInstagram,
   FaBars,
   FaTimes,
+  FaShoppingCart,
 } from "react-icons/fa";
 import logo from "../images/Logo.png";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -24,7 +27,7 @@ const Navbar = () => {
   const handleScrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = -80; // pour tenir compte de la navbar fixe
+      const offset = -80;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -106,15 +109,26 @@ const Navbar = () => {
               <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-clay transition-all group-hover:w-full"></span>
             </li>
 
-            {/* CTA */}
-            <li className="ml-6">
-              <Link to="/contact">
-                <button className="px-6 py-2 rounded-full bg-clay text-white text-sm hover:scale-105 hover:shadow-lg transition-all">
-                  Contact
-                </button>
+            <li className="relative group">
+              <Link to="/contact" className="text-sm hover:text-clay transition">
+                Contact
               </Link>
+              <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-clay transition-all group-hover:w-full"></span>
             </li>
           </ul>
+
+          {/* DESKTOP ACTIONS */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* Cart */}
+            <Link to="/panier" className="relative text-olive hover:text-clay transition">
+              <FaShoppingCart size={20} />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-clay text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          </div>
 
           {/* MOBILE BUTTON */}
           <button
@@ -160,6 +174,16 @@ const Navbar = () => {
               </li>
               <li>
                 <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
+              </li>
+              <li>
+                <Link to="/panier" onClick={() => setOpen(false)} className="flex items-center gap-2">
+                  <FaShoppingCart /> Panier
+                  {totalItems > 0 && (
+                    <span className="bg-clay text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
               </li>
             </ul>
           </motion.div>

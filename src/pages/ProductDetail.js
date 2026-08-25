@@ -2,28 +2,37 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
 import FaienceGallery from "../components/FaienceGallery";
 import FaienceUnits from "../components/FaienceUnits";
 import FaienceSpecs from "../components/FaienceSpecs";
-
 import BathroomSpecs from "../components/BathroomSpecs";
-
 import {
   fetchFaienceDetail, fetchBathroomDetail
 } from "../services/productDetailService";
+import { useCart } from "../context/CartContext";
+import { FaShoppingCart, FaCheck } from "react-icons/fa";
 
 const ProductDetail = () => {
   const { id, type } = useParams();
   const [product, setProduct] = useState(null);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
 
   useEffect(() => {
+    setProduct(null);
+    setAdded(false);
     if (type === "faience") {
       fetchFaienceDetail(id).then(setProduct);
     } else if (type === "bathroom") {
       fetchBathroomDetail(id).then(setProduct);
     }
   }, [id, type]);
+
+  const handleAdd = () => {
+    addItem(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
 
   if (!product) return <p className="p-10">Chargement...</p>;
 
@@ -50,6 +59,26 @@ const ProductDetail = () => {
           {product.type === "bathroom" && (
             <BathroomSpecs product={product} />
           )}
+
+          {/* Add to cart */}
+          <button
+            onClick={handleAdd}
+            className={`mt-8 w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
+              added
+                ? "bg-green-600 text-white"
+                : "bg-olive text-white hover:bg-clay"
+            }`}
+          >
+            {added ? (
+              <>
+                <FaCheck /> Ajouté au panier
+              </>
+            ) : (
+              <>
+                <FaShoppingCart /> Ajouter au panier
+              </>
+            )}
+          </button>
         </div>
       </div>
 

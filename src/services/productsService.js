@@ -1,13 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey
-);
-
+const safeData = ({ data, error }, fallback = []) => {
+  if (error) console.error("Supabase error:", error.message);
+  return data || fallback;
+};
 
 export const fetchProducts = async (filters = {}) => {
   const {
@@ -51,7 +47,7 @@ export const fetchProducts = async (filters = {}) => {
 
   const { data: faiences } = await faienceQuery;
 
-  let filteredFaiences = faiences || [];
+  let filteredFaiences = safeData({ data: faiences });
 
  /* =========================
    CATEGORIES – TRAITEMENT COMPLET
@@ -71,12 +67,12 @@ if (categories.length > 0) {
     );
 
     if (faienceCategoriesOnly.length > 0) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("faience_categories")
         .select("id_faience, categories(nom)")
         .in("categories.nom", faienceCategoriesOnly);
 
-      const allowedIds = data.map(d => d.id_faience);
+      const allowedIds = safeData({ data, error }).map(d => d.id_faience);
 
       filteredFaiences = filteredFaiences.filter(f =>
         allowedIds.includes(f.id)
@@ -87,24 +83,24 @@ if (categories.length > 0) {
 
 
   if (utilisations.length > 0) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("faience_utilisations")
       .select("id_faience, utilisations(nom)")
       .in("utilisations.nom", utilisations);
 
-    const allowedIds = data.map(d => d.id_faience);
+    const allowedIds = safeData({ data, error }).map(d => d.id_faience);
     filteredFaiences = filteredFaiences.filter(f =>
       allowedIds.includes(f.id)
     );
   }
 
   if (finitions.length > 0) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("faience_finitions")
       .select("id_faience, finitions(nom)")
       .in("finitions.nom", finitions);
 
-    const allowedIds = data.map(d => d.id_faience);
+    const allowedIds = safeData({ data, error }).map(d => d.id_faience);
     filteredFaiences = filteredFaiences.filter(f =>
       allowedIds.includes(f.id)
     );
@@ -120,7 +116,7 @@ if (categories.length > 0) {
     nom: f.nom,
     disponibilite: f.disponibilite,
     image:
-      faiencePhotos.find(p => p.id_faience === f.id)?.url || null,
+      safeData({ data: faiencePhotos }).find(p => p.id_faience === f.id)?.url || null,
   }));
 
   /* =========================
@@ -140,19 +136,19 @@ if (categories.length > 0) {
       bathroomQuery = bathroomQuery.ilike("nom", `%${search}%`);
     }
 
-    const { data: bathrooms } = await bathroomQuery;
+    const { data: bathrooms, error } = await bathroomQuery;
 
     const { data: bathroomPhotos } = await supabase
       .from("photos_grand_bathroom")
       .select("id_bathroom, url");
 
-    bathroomProducts = bathrooms.map(b => ({
+    bathroomProducts = safeData({ data: bathrooms, error }).map(b => ({
       id: b.id,
       type: "bathroom",
       nom: b.nom,
       disponibilite: b.disponibilite,
       image:
-        bathroomPhotos.find(p => p.id_bathroom === b.id)?.url || null,
+        safeData({ data: bathroomPhotos }).find(p => p.id_bathroom === b.id)?.url || null,
     }));
   }
 
