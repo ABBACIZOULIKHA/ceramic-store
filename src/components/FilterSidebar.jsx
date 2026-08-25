@@ -1,63 +1,40 @@
 import React, { useState } from "react";
 
-const FilterSidebar = ({ onApply }) => {
-  const [search, setSearch] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [utilisations, setUtilisations] = useState([]);
-  const [format, setFormat] = useState("");
-  const [aspect, setAspect] = useState("");
-  const [finitions, setFinitions] = useState([]);
-  const [epaisseur, setEpaisseur] = useState("");
+const FilterSidebar = ({ filters, onApply }) => {
+  const [categories, setCategories] = useState(filters.categories || []);
+  const [utilisations, setUtilisations] = useState(filters.utilisations || []);
+  const [format, setFormat] = useState(filters.format || "");
+  const [aspect, setAspect] = useState(filters.aspect || "");
+  const [finitions, setFinitions] = useState(filters.finitions || []);
+  const [epaisseur, setEpaisseur] = useState(filters.epaisseur || "");
 
-  // helpers
-  const toggleArrayValue = (value, array, setArray) => {
-    setArray(
-      array.includes(value)
-        ? array.filter((v) => v !== value)
-        : [...array, value]
-    );
+  const emit = (overrides) => {
+    onApply({ ...filters, ...overrides });
   };
 
-  const applyFilters = () => {
-    onApply({
-      search,
-      categories,
-      utilisations,
-      format,
-      aspect,
-      finitions,
-      epaisseur,
-    });
+  const toggleArray = (value, array, setArray, key) => {
+    const next = array.includes(value)
+      ? array.filter((v) => v !== value)
+      : [...array, value];
+    setArray(next);
+    emit({ [key]: next });
   };
 
   const resetFilters = () => {
-    setSearch("");
     setCategories([]);
     setUtilisations([]);
     setFormat("");
     setAspect("");
     setFinitions([]);
     setEpaisseur("");
-    // Optionally, apply empty filters immediately
-    onApply({
-      search: "",
-      categories: [],
-      utilisations: [],
-      format: "",
-      aspect: "",
-      finitions: [],
-      epaisseur: "",
-    });
+    onApply({ search: filters.search });
   };
 
   return (
     <aside className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 space-y-8">
-
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">
-          Filtres
-        </h2>
+        <h2 className="text-sm font-semibold text-gray-800">Filtres</h2>
         <button
           className="text-xs text-gray-500 hover:text-red-500 transition"
           onClick={resetFilters}
@@ -65,18 +42,6 @@ const FilterSidebar = ({ onApply }) => {
           Réinitialiser
         </button>
       </div>
-
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Recherche..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm
-                   placeholder-gray-400
-                   focus:outline-none focus:ring-2 focus:ring-olive/40 focus:border-olive
-                   transition"
-      />
 
       {/* Categories */}
       <section className="space-y-4">
@@ -93,7 +58,7 @@ const FilterSidebar = ({ onApply }) => {
                 type="checkbox"
                 checked={categories.includes(item)}
                 onChange={() =>
-                  toggleArrayValue(item, categories, setCategories)
+                  toggleArray(item, categories, setCategories, "categories")
                 }
                 className="h-4 w-4 rounded border-gray-300 text-olive focus:ring-olive"
               />
@@ -119,7 +84,7 @@ const FilterSidebar = ({ onApply }) => {
                   type="checkbox"
                   checked={utilisations.includes(item)}
                   onChange={() =>
-                    toggleArrayValue(item, utilisations, setUtilisations)
+                    toggleArray(item, utilisations, setUtilisations, "utilisations")
                   }
                   className="h-4 w-4 rounded border-gray-300 text-olive focus:ring-olive"
                 />
@@ -137,7 +102,10 @@ const FilterSidebar = ({ onApply }) => {
         </h3>
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value)}
+          onChange={(e) => {
+            setFormat(e.target.value);
+            emit({ format: e.target.value });
+          }}
           className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm
                      focus:outline-none focus:ring-2 focus:ring-olive/40 focus:border-olive
                      transition"
@@ -166,7 +134,11 @@ const FilterSidebar = ({ onApply }) => {
                   name="aspect"
                   value={item}
                   checked={aspect === item}
-                  onChange={() => setAspect(item)}
+                  onChange={() => {
+                    const next = aspect === item ? "" : item;
+                    setAspect(next);
+                    emit({ aspect: next });
+                  }}
                   className="h-4 w-4 border-gray-300 text-olive focus:ring-olive"
                 />
                 {item}
@@ -187,7 +159,9 @@ const FilterSidebar = ({ onApply }) => {
               <input
                 type="checkbox"
                 checked={finitions.includes(item)}
-                onChange={() => toggleArrayValue(item, finitions, setFinitions)}
+                onChange={() =>
+                  toggleArray(item, finitions, setFinitions, "finitions")
+                }
                 className="peer hidden"
               />
               <div
@@ -212,26 +186,22 @@ const FilterSidebar = ({ onApply }) => {
           {["9mm", "12mm"].map((item) => (
             <button
               key={item}
-              onClick={() => setEpaisseur(item)}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs
-                         text-gray-700
-                         hover:border-olive hover:bg-olive/10 hover:text-olive
-                         transition"
+              onClick={() => {
+                const next = epaisseur === item ? "" : item;
+                setEpaisseur(next);
+                emit({ epaisseur: next });
+              }}
+              className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+                epaisseur === item
+                  ? "border-olive bg-olive/10 text-olive"
+                  : "border-gray-200 text-gray-700 hover:border-olive hover:bg-olive/10 hover:text-olive"
+              }`}
             >
               {item}
             </button>
           ))}
         </div>
       </section>
-
-      {/* Apply Button */}
-      <button
-        className="w-full rounded-xl bg-olive text-white py-3 text-sm font-medium
-                   hover:bg-olive/90 transition"
-        onClick={applyFilters}
-      >
-        Appliquer les filtres
-      </button>
     </aside>
   );
 };
