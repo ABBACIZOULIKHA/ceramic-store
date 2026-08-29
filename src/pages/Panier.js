@@ -3,9 +3,15 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
 import { FaTrash, FaPlus, FaMinus, FaArrowLeft } from "react-icons/fa";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const Panier = () => {
   const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();
+
+  usePageMeta({
+    title: "Mon panier | Abbaci Ceramic",
+    description: "Consultez votre panier de faïences, carrelages et sanitaires chez Abbaci Ceramic.",
+  });
 
   return (
     <>

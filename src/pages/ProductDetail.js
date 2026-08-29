@@ -11,12 +11,23 @@ import {
 } from "../services/productDetailService";
 import { useCart } from "../context/CartContext";
 import { FaShoppingCart, FaCheck } from "react-icons/fa";
+import { usePageMeta } from "../lib/usePageMeta";
+import TileCalculator from "../components/TileCalculator";
 
 const ProductDetail = () => {
   const { id, type } = useParams();
   const [product, setProduct] = useState(null);
   const [added, setAdded] = useState(false);
   const { addItem } = useCart();
+
+  usePageMeta({
+    title: product
+      ? `${product.nom} | Abbaci Ceramic`
+      : "Produit | Abbaci Ceramic",
+    description: product
+      ? `${product.nom} — ${product.format ? "Format " + product.format + ", " : ""}${product.disponibilite || ""}. Disponible chez Abbaci Ceramic, Hadjout.`
+      : "Détail du produit chez Abbaci Ceramic.",
+  });
 
   useEffect(() => {
     setProduct(null);
@@ -79,6 +90,13 @@ const ProductDetail = () => {
               </>
             )}
           </button>
+
+          {/* Tile calculator */}
+          {product.type === "faience" && (
+            <div className="mt-14">
+              <TileCalculator defaultFormat={product.format} />
+            </div>
+          )}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import Produits from './pages/Produits';
 import ProductDetail from './pages/ProductDetail';
 import Panier from './pages/Panier';
 import ChatBot from './components/ChatBot';
+import NotFound from './components/NotFound';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
               <Route path='/produits' element={<Produits />} />
               <Route path="/produits/:type/:id" element={<ProductDetail />} />
               <Route path="/panier" element={<Panier />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <ChatBot />
           </Router>

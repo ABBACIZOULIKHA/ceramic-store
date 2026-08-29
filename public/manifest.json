@@ -1,6 +1,8 @@
 {
   "short_name": "Abbaci",
   "name": "Abbaci Ceramic",
+  "description": "Faïences, carrelages et sanitaires à Hadjout (Tipaza).",
+  "lang": "fr",
   "icons": [
     {
       "src": "icon.png",

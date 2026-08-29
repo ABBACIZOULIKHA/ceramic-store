@@ -1,3 +1,4 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://ABBACIZOULIKHA.github.io/ceramic-store/sitemap.xml
