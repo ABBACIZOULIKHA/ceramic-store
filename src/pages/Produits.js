@@ -8,7 +8,6 @@ import { useSearchParams } from "react-router-dom";
 import { fetchProducts, fetchFilterOptions } from "../services/productsService";
 import { FaSearch, FaLayerGroup, FaShower } from "react-icons/fa";
 import { usePageMeta } from "../lib/usePageMeta";
-import TileCalculator from "../components/TileCalculator";
 
 const Produits = () => {
   const [products, setProducts] = useState([]);
@@ -165,13 +164,6 @@ const Produits = () => {
                   <ProductGrid products={displayedProducts} />
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Tile calculator */}
-          {selectedTab === "faience" && (
-            <div className="mt-16">
-              <TileCalculator />
             </div>
           )}
         </div>
