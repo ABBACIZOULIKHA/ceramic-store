@@ -1,12 +1,18 @@
 import React from "react";
 import {
   FaPhoneAlt,
-  FaEnvelope,
+  FaWhatsapp,
   FaMapMarkerAlt,
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
 } from "react-icons/fa";
+import {
+  WHATSAPP_GROUP_URL,
+  FACEBOOK_URL,
+  INSTAGRAM_URL,
+  LINKEDIN_URL,
+} from "../lib/contactLinks";
 
 const ContactInfo = () => {
   return (
@@ -52,12 +58,14 @@ const ContactInfo = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <FaEnvelope className="text-clay text-xl" />
+              <FaWhatsapp className="text-clay text-xl" />
               <a
-                href="mailto:kz_abbaci@esi.dz"
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-sand transition"
               >
-                kz_abbaci@esi.dz
+                Rejoindre le groupe WhatsApp
               </a>
             </div>
 
@@ -68,19 +76,25 @@ const ContactInfo = () => {
               </p>
               <div className="flex gap-4">
                 <a
-                  href="https://facebook.com"
+                  href={FACEBOOK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaFacebookF />
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaInstagram />
                 </a>
                 <a
-                  href="htttps://linkedin.com"
+                  href={LINKEDIN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-clay text-olive p-3 rounded-full hover:bg-sand transition"
                 >
                   <FaLinkedinIn />

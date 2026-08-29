@@ -1,13 +1,20 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import logo from "../images/Logo.png";
 import {
   FaFacebookF,
   FaLinkedinIn,
   FaInstagram,
+  FaWhatsapp,
   FaMapMarkerAlt,
   FaPhoneAlt,
-  FaEnvelope,
 } from "react-icons/fa";
+import {
+  WHATSAPP_GROUP_URL,
+  FACEBOOK_URL,
+  INSTAGRAM_URL,
+  LINKEDIN_URL,
+} from "../lib/contactLinks";
 
 const Footer = () => {
   return (
@@ -47,14 +54,29 @@ const Footer = () => {
               Produits
             </h3>
             <ul className="space-y-2 text-ivory/90">
-              <li className="hover:text-clay transition">
-                Carreaux de Sol
+              <li>
+                <Link
+                  to={`/produits?cat=${encodeURIComponent("Carreaux de Sol")}`}
+                  className="hover:text-clay transition"
+                >
+                  Carreaux de Sol
+                </Link>
               </li>
-              <li className="hover:text-clay transition">
-                Faïences Murales
+              <li>
+                <Link
+                  to={`/produits?cat=${encodeURIComponent("Faïences Murales")}`}
+                  className="hover:text-clay transition"
+                >
+                  Faïences Murales
+                </Link>
               </li>
-              <li className="hover:text-clay transition">
-                Sanitaires
+              <li>
+                <Link
+                  to="/produits?cat=Sanitaires"
+                  className="hover:text-clay transition"
+                >
+                  Sanitaires
+                </Link>
               </li>
             </ul>
           </div>
@@ -78,29 +100,42 @@ const Footer = () => {
             </div>
 
             <div className="flex items-center justify-center md:justify-start gap-3">
-              <FaEnvelope className="text-clay" />
-              <p className="text-sm">kz_abbaci@esi.dz</p>
+              <FaWhatsapp className="text-clay" />
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm hover:text-sand transition"
+              >
+                Rejoindre le groupe WhatsApp
+              </a>
             </div>
 
             {/* Social icons */}
             <div className="flex justify-center md:justify-start gap-4 pt-4">
               <a
-                href="https://facebook.com"
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-clay text-olive p-2 rounded-full hover:bg-sand transition"
               >
                 <FaFacebookF />
               </a>
               <a
-                href="https://instagram.com"
-                className="bg-clay text-olive p-2 rounded-full hover:bg-sand transition"
-              >
-                <FaLinkedinIn />
-              </a>
-              <a
-                href="htttps://linkedin.com"
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-clay text-olive p-2 rounded-full hover:bg-sand transition"
               >
                 <FaInstagram />
+              </a>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-clay text-olive p-2 rounded-full hover:bg-sand transition"
+              >
+                <FaLinkedinIn />
               </a>
             </div>
           </div>

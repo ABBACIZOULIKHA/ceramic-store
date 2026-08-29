@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaPhoneAlt,
-  FaEnvelope,
+  FaWhatsapp,
   FaFacebookF,
   FaInstagram,
   FaBars,
@@ -12,6 +12,7 @@ import {
 import logo from "../images/Logo.png";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { WHATSAPP_GROUP_URL, FACEBOOK_URL, INSTAGRAM_URL } from "../lib/contactLinks";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -47,17 +48,39 @@ const Navbar = () => {
               <FaPhoneAlt /> (+213) 793 921 328
             </span>
             <span className="hidden md:flex items-center gap-2">
-              <FaEnvelope /> kz_abbaci@esi.dz
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:opacity-80 transition"
+              >
+                <FaWhatsapp /> WhatsApp
+              </a>
             </span>
           </div>
           <div className="flex gap-3">
-            {[FaFacebookF, FaInstagram].map((Icon, i) => (
-              <Icon
-                key={i}
+            <a
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
+              <FaFacebookF
                 size={20}
-                className="cursor-pointer hover:scale-110 transition-transform duration-200"
+                className="hover:scale-110 transition-transform duration-200"
               />
-            ))}
+            </a>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <FaInstagram
+                size={20}
+                className="hover:scale-110 transition-transform duration-200"
+              />
+            </a>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import FilterSidebar from "../components/FilterSidebar";
 import ProductGrid from "../components/ProductGrid";
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchProducts, fetchFilterOptions } from "../services/productsService";
 import { FaSearch, FaLayerGroup, FaShower } from "react-icons/fa";
 
@@ -14,10 +15,24 @@ const Produits = () => {
   const [searchInput, setSearchInput] = useState("");
   const [selectedTab, setSelectedTab] = useState(null);
   const [filterOptions, setFilterOptions] = useState(null);
+  const [searchParams] = useSearchParams();
+  const requestedCategory = searchParams.get("cat");
 
   useEffect(() => {
     fetchFilterOptions().then(setFilterOptions);
   }, []);
+
+  useEffect(() => {
+    if (!requestedCategory) return;
+    setSearchInput("");
+    if (requestedCategory === "Sanitaires") {
+      setSelectedTab("bathroom");
+      setFilters({});
+    } else {
+      setSelectedTab("faience");
+      setFilters({ categories: [requestedCategory] });
+    }
+  }, [requestedCategory]);
 
   const applySearch = useCallback((value) => {
     setFilters((prev) => ({ ...prev, search: value }));
@@ -126,7 +141,12 @@ const Produits = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
               {selectedTab === "faience" && (
                 <div className="lg:col-span-1">
-                  <FilterSidebar filters={filters} onApply={setFilters} options={filterOptions} />
+                  <FilterSidebar
+                    key={(filters.categories || []).join(",")}
+                    filters={filters}
+                    onApply={setFilters}
+                    options={filterOptions}
+                  />
                 </div>
               )}
 
