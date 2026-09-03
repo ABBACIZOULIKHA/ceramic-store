@@ -29,11 +29,16 @@ module.exports = {
           '0%': { transform: 'translateX(-100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
 
       animation: {
         fadeIn: 'fadeIn 2s ease-out',
         slideInLeft: 'slideInLeft 1.5s ease-out',
+        marquee: 'marquee 30s linear infinite',
       },
     },
   },

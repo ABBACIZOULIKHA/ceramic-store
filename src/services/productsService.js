@@ -5,6 +5,21 @@ const safeData = ({ data, error }, fallback = []) => {
   return data || fallback;
 };
 
+const toProducer = (row) => {
+  const p = row?.producers;
+  if (!p) return null;
+  return { name: p.name, logo_img: p.logo_img };
+};
+
+export const fetchProducers = async () => {
+  const { data, error } = await supabase
+    .from("producers")
+    .select("id, name, logo_img")
+    .order("name", { ascending: true });
+
+  return safeData({ data, error }).filter((p) => p && p.name);
+};
+
 export const fetchFilterOptions = async () => {
   const { data: formats } = await supabase
     .from("faience")
@@ -45,6 +60,8 @@ export const fetchProducts = async (filters = {}) => {
     format,
     aspect,
     finitions = [],
+    nouveau,
+    promo,
   } = filters;
 
   const hasFaienceFilters =
@@ -60,12 +77,14 @@ export const fetchProducts = async (filters = {}) => {
     categories.length === 0 &&
     !hasFaienceFilters;
 
+  const newOrPromo = nouveau || promo;
+
   /* =========================
      FAÏENCE
   ========================= */
   let faienceQuery = supabase
     .from("faience")
-    .select("id, nom, disponibilite, format, aspect, epaisseur");
+    .select("id, nom, disponibilite, format, aspect, epaisseur, est_nouveau, prix, prix_promo, producers(name, logo_img)");
 
   if (search) {
     faienceQuery = faienceQuery.ilike("nom", `%${search}%`);
@@ -73,6 +92,8 @@ export const fetchProducts = async (filters = {}) => {
 
   if (format) faienceQuery = faienceQuery.eq("format", format);
   if (aspect) faienceQuery = faienceQuery.eq("aspect", aspect);
+  if (nouveau) faienceQuery = faienceQuery.eq("est_nouveau", true);
+  if (promo) faienceQuery = faienceQuery.not("prix_promo", "is", null);
 
   const { data: faiences } = await faienceQuery;
 
@@ -144,6 +165,10 @@ if (categories.length > 0) {
     type: "faience",
     nom: f.nom,
     disponibilite: f.disponibilite,
+    est_nouveau: f.est_nouveau,
+    prix: f.prix,
+    prix_promo: f.prix_promo,
+    producer: toProducer(f),
     image:
       safeData({ data: faiencePhotos }).find(p => p.id_faience === f.id)?.url || null,
   }));
@@ -155,15 +180,19 @@ if (categories.length > 0) {
 
   if (
     noFiltersApplied ||
-    (hasSanitairesCategory && !hasFaienceFilters)
+    (hasSanitairesCategory && !hasFaienceFilters) ||
+    (categories.length === 0 && !hasFaienceFilters && newOrPromo)
   ) {
     let bathroomQuery = supabase
       .from("bathroom")
-      .select("id, nom, disponibilite");
+      .select("id, nom, disponibilite, est_nouveau, prix, prix_promo, producers(name, logo_img)");
 
     if (search) {
       bathroomQuery = bathroomQuery.ilike("nom", `%${search}%`);
     }
+
+    if (nouveau) bathroomQuery = bathroomQuery.eq("est_nouveau", true);
+    if (promo) bathroomQuery = bathroomQuery.not("prix_promo", "is", null);
 
     const { data: bathrooms, error } = await bathroomQuery;
 
@@ -176,12 +205,122 @@ if (categories.length > 0) {
       type: "bathroom",
       nom: b.nom,
       disponibilite: b.disponibilite,
+      est_nouveau: b.est_nouveau,
+      prix: b.prix,
+      prix_promo: b.prix_promo,
+      producer: toProducer(b),
       image:
         safeData({ data: bathroomPhotos }).find(p => p.id_bathroom === b.id)?.url || null,
     }));
   }
 
   return [...faienceProducts, ...bathroomProducts];
+};
+
+/* =========================
+   NOUVEAUTÉS
+   Produits marqués est_nouveau = true
+========================= */
+export const fetchNewProducts = async (limit = 8) => {
+  const { data: faiences } = await supabase
+    .from("faience")
+    .select("id, nom, disponibilite, est_nouveau, prix, prix_promo, producers(name, logo_img)")
+    .eq("est_nouveau", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  const { data: bathrooms } = await supabase
+    .from("bathroom")
+    .select("id, nom, disponibilite, est_nouveau, prix, prix_promo, producers(name, logo_img)")
+    .eq("est_nouveau", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  const { data: faiencePhotos } = await supabase
+    .from("photos_grand_faience")
+    .select("id_faience, url");
+
+  const { data: bathroomPhotos } = await supabase
+    .from("photos_grand_bathroom")
+    .select("id_bathroom, url");
+
+  const faienceProducts = safeData({ data: faiences }).map((f) => ({
+    id: f.id,
+    type: "faience",
+    nom: f.nom,
+    disponibilite: f.disponibilite,
+    est_nouveau: f.est_nouveau,
+    prix: f.prix,
+    prix_promo: f.prix_promo,
+    producer: toProducer(f),
+    image: safeData({ data: faiencePhotos }).find((p) => p.id_faience === f.id)?.url || null,
+  }));
+
+  const bathroomProducts = safeData({ data: bathrooms }).map((b) => ({
+    id: b.id,
+    type: "bathroom",
+    nom: b.nom,
+    disponibilite: b.disponibilite,
+    est_nouveau: b.est_nouveau,
+    prix: b.prix,
+    prix_promo: b.prix_promo,
+    producer: toProducer(b),
+    image: safeData({ data: bathroomPhotos }).find((p) => p.id_bathroom === b.id)?.url || null,
+  }));
+
+  return [...faienceProducts, ...bathroomProducts].slice(0, limit);
+};
+
+/* =========================
+   PROMOTIONS
+   Produits avec un prix_promo renseigné
+========================= */
+export const fetchPromotionProducts = async (limit = 8) => {
+  const { data: faiences } = await supabase
+    .from("faience")
+    .select("id, nom, disponibilite, est_nouveau, prix, prix_promo, producers(name, logo_img)")
+    .not("prix_promo", "is", null)
+    .limit(limit);
+
+  const { data: bathrooms } = await supabase
+    .from("bathroom")
+    .select("id, nom, disponibilite, est_nouveau, prix, prix_promo, producers(name, logo_img)")
+    .not("prix_promo", "is", null)
+    .limit(limit);
+
+  const { data: faiencePhotos } = await supabase
+    .from("photos_grand_faience")
+    .select("id_faience, url");
+
+  const { data: bathroomPhotos } = await supabase
+    .from("photos_grand_bathroom")
+    .select("id_bathroom, url");
+
+  const faienceProducts = safeData({ data: faiences }).map((f) => ({
+    id: f.id,
+    type: "faience",
+    nom: f.nom,
+    disponibilite: f.disponibilite,
+    est_nouveau: f.est_nouveau,
+    prix: f.prix,
+    prix_promo: f.prix_promo,
+    producer: toProducer(f),
+    image: safeData({ data: faiencePhotos }).find((p) => p.id_faience === f.id)?.url || null,
+  }));
+
+  const bathroomProducts = safeData({ data: bathrooms }).map((b) => ({
+    id: b.id,
+    type: "bathroom",
+    nom: b.nom,
+    disponibilite: b.disponibilite,
+    est_nouveau: b.est_nouveau,
+    prix: b.prix,
+    prix_promo: b.prix_promo,
+    producer: toProducer(b),
+    image: safeData({ data: bathroomPhotos }).find((p) => p.id_bathroom === b.id)?.url || null,
+  }));
+
+  return [...faienceProducts, ...bathroomProducts].slice(0, limit);
 };
 
 

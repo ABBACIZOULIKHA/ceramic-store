@@ -3,20 +3,32 @@
   "name": "Abbaci Ceramic",
   "description": "Faïences, carrelages et sanitaires à Hadjout (Tipaza).",
   "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/ceramic-store/",
+  "scope": "/ceramic-store/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "theme_color": "#6B705C",
+  "background_color": "#FFE8D6",
+  "categories": ["shopping", "home"],
   "icons": [
     {
-      "src": "icon.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icon.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#6B705C",
-  "background_color": "#FFE8D6"
+  ]
 }

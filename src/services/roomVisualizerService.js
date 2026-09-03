@@ -1,38 +1,8 @@
-const GEMINI_MODEL =
-  process.env.REACT_APP_GEMINI_MODEL || "gemini-3.1-flash-image";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const NVIDIA_MODEL =
+  process.env.REACT_APP_NVIDIA_MODEL || "qwen-image-edit-nvpcb-ovsl2sl";
+const NVIDIA_URL =
+  "https://integrate.api.nvidia.com/v1/images/edits";
 
-const PROMPT = `Tu es un photographe professionnel spécialisé dans les simulations d'ameublement.
-Image 1 : une photo produit (carrelage ou sanitaires) du catalogue.
-Image 2 : une photo prise par le client chez lui.
-
-Crée une image réaliste où le produit de l'image 1 est appliqué/installé naturellement dans la scène de l'image 2.
-Règles :
-- Conserve exactement l'apparence du produit (motif, couleur, texture, format) sans modification.
-- Respecte la perspective, l'éclairage et l'ambiance de la pièce.
-- Le résultat doit ressembler à une vraie photo après installation.
-- Ne modifie rien d'autre dans la pièce.`;
-
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = () => reject(new Error("Impossible de lire le fichier"));
-    reader.readAsDataURL(file);
-  });
-
-const urlToBase64 = async (url) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Impossible de récupérer l'image produit");
-  const blob = await res.blob();
-  return fileToBase64(blob);
-};
-
-/**
- * Redimensionne et compresse l'image uploadée (max 1280px, JPEG)
- * pour limiter la taille de la requête vers Gemini.
- * Retourne { mimeType, data } en base64.
- */
 export const prepareRoomImage = (file) =>
   new Promise((resolve, reject) => {
     if (!file.type.startsWith("image/")) {
@@ -55,10 +25,14 @@ export const prepareRoomImage = (file) =>
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      resolve({
-        mimeType: "image/jpeg",
-        data: canvas.toDataURL("image/jpeg", 0.85).split(",")[1],
-      });
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) reject(new Error("Impossible de compresser l'image"));
+          resolve(blob);
+        },
+        "image/jpeg",
+        0.85
+      );
     };
 
     img.onerror = () => {
@@ -69,43 +43,37 @@ export const prepareRoomImage = (file) =>
     img.src = objectUrl;
   });
 
-export const generateRoomPreview = async (productImageUrl, roomImage) => {
-  const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Clé API Gemini manquante");
+const buildPrompt = (productImageUrl) => {
+  return `Place this ceramic tile product naturally onto the floor surface in this room photo. The tile should be installed realistically as if it were part of the room — matching the perspective, lighting, shadows, and ambiance of the scene. The result should look like a professional interior photography shot of the ceramic tile floor installation. Keep the rest of the room unchanged.`;
+};
 
-  const [productData] = await Promise.all([urlToBase64(productImageUrl)]);
+export const generateRoomPreview = async (productImageUrl, roomBlob) => {
+  const apiKey = process.env.REACT_APP_NVIDIA_API_KEY;
+  if (!apiKey) throw new Error("Clé API NVIDIA manquante");
 
-  const res = await fetch(GEMINI_URL, {
+  const formData = new FormData();
+  formData.append("model", NVIDIA_MODEL);
+  formData.append("image", roomBlob, "room.jpg");
+  formData.append("prompt", buildPrompt(productImageUrl));
+
+  const res = await fetch(NVIDIA_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
+      "Authorization": `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: PROMPT },
-            { inlineData: { mimeType: "image/jpeg", data: productData } },
-            {
-              inlineData: { mimeType: roomImage.mimeType, data: roomImage.data },
-            },
-          ],
-        },
-      ],
-    }),
+    body: formData,
   });
 
   let payload;
   try {
     payload = await res.json();
   } catch {
-    throw new Error("Réponse invalide de Gemini");
+    throw new Error("Réponse invalide de NVIDIA");
   }
 
   if (!res.ok) {
-    if (res.status === 400 && /API key/i.test(payload?.error?.message || "")) {
-      throw new Error("Clé API Gemini invalide");
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Clé API NVIDIA invalide");
     }
     if (res.status === 429) {
       throw new Error("Quota dépassé, réessayez plus tard");
@@ -115,17 +83,17 @@ export const generateRoomPreview = async (productImageUrl, roomImage) => {
     );
   }
 
-  const parts = payload?.candidates?.[0]?.content?.parts ?? [];
-  const imagePart = parts.find((p) => p.inlineData);
-
-  if (!imagePart) {
-    const blockReason = payload?.promptFeedback?.blockReason;
-    throw new Error(
-      blockReason
-        ? `Image bloquée (${blockReason})`
-        : "Aucune image générée, réessayez avec une autre photo"
-    );
+  const data = payload?.data;
+  if (!data || !data[0]) {
+    throw new Error("Aucune image générée, réessayez avec une autre photo");
   }
 
-  return `data:${imagePart.inlineData.mimeType || "image/png"};base64,${imagePart.inlineData.data}`;
+  const result = data[0];
+  if (result.b64_json) {
+    return `data:image/png;base64,${result.b64_json}`;
+  }
+  if (result.url) {
+    return result.url;
+  }
+  throw new Error("Format de réponse inattendu de NVIDIA");
 };

@@ -135,8 +135,8 @@ const RoomVisualizer = ({ productImage, nom }) => {
             <div className="flex flex-col items-center justify-center h-[420px] rounded-xl border bg-ivory/40 text-center px-6">
               <p className="font-medium text-olive">Votre aperçu apparaîtra ici</p>
               <p className="mt-1 text-sm text-stone max-w-xs">
-                La génération prend quelques secondes grâce à l'IA Gemini de
-                Google.
+                La génération prend quelques secondes grâce au modèle NVIDIA
+                Qwen-Image-Edit.
               </p>
             </div>
           )}

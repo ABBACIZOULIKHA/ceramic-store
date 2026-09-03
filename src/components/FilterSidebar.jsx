@@ -6,6 +6,8 @@ const FilterSidebar = ({ filters, onApply, options }) => {
   const [format, setFormat] = useState(filters.format || "");
   const [aspect, setAspect] = useState(filters.aspect || "");
   const [finitions, setFinitions] = useState(filters.finitions || []);
+  const [nouveau, setNouveau] = useState(!!filters.nouveau);
+  const [promo, setPromo] = useState(!!filters.promo);
 
   const emit = (overrides) => {
     onApply({ ...filters, ...overrides });
@@ -19,12 +21,20 @@ const FilterSidebar = ({ filters, onApply, options }) => {
     emit({ [key]: next });
   };
 
+  const toggleFlag = (current, setFlag, key) => {
+    const next = !current;
+    setFlag(next);
+    emit({ [key]: next });
+  };
+
   const resetFilters = () => {
     setCategories([]);
     setUtilisations([]);
     setFormat("");
     setAspect("");
     setFinitions([]);
+    setNouveau(false);
+    setPromo(false);
     onApply({ search: filters.search });
   };
 
@@ -71,6 +81,33 @@ const FilterSidebar = ({ filters, onApply, options }) => {
               {item}
             </label>
           ))}
+        </div>
+      </section>
+
+      {/* Nouveau / Promo */}
+      <section className="space-y-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+          Nouveautés &amp; Promotions
+        </h3>
+        <div className="space-y-3 text-sm text-gray-700">
+          <label className="flex items-center gap-3 cursor-pointer hover:text-olive transition">
+            <input
+              type="checkbox"
+              checked={nouveau}
+              onChange={() => toggleFlag(nouveau, setNouveau, "nouveau")}
+              className="h-4 w-4 rounded border-gray-300 text-olive focus:ring-olive"
+            />
+            Nouveautés
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer hover:text-olive transition">
+            <input
+              type="checkbox"
+              checked={promo}
+              onChange={() => toggleFlag(promo, setPromo, "promo")}
+              className="h-4 w-4 rounded border-gray-300 text-olive focus:ring-olive"
+            />
+            En promotion
+          </label>
         </div>
       </section>
 

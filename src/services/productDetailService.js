@@ -11,7 +11,7 @@ const safeData = ({ data, error }) => {
 export const fetchFaienceDetail = async (id) => {
   const { data: faience } = await supabase
     .from("faience")
-    .select("*")
+    .select("*, producers(name, logo_img)")
     .eq("id", id)
     .single();
 
@@ -48,6 +48,7 @@ export const fetchFaienceDetail = async (id) => {
   return {
     type: "faience",
     ...faience,
+    producer: faience.producers || null,
     grandImages: grands.map(i => i.url),
     unitImages: units,
     utilisations: utilisations.map(u => u.utilisations.nom),
@@ -61,7 +62,7 @@ export const fetchFaienceDetail = async (id) => {
 export const fetchBathroomDetail = async (id) => {
   const { data: bathroom } = await supabase
     .from("bathroom")
-    .select("*")
+    .select("*, producers(name, logo_img)")
     .eq("id", id)
     .single();
 
@@ -84,6 +85,7 @@ export const fetchBathroomDetail = async (id) => {
   return {
     type: "bathroom",
     ...bathroom,
+    producer: bathroom.producers || null,
     grandImages: grands.map(i => i.url),
     unitImages: units,
   };
